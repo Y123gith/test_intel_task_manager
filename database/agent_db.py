@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 import db_connection
+from services import agent_services
 
 
 class AgentInfo(BaseModel):
@@ -16,6 +17,7 @@ class AgentDB(AgentInfo):
 
     
     def create_agent(self, data: AgentInfo):
+        agent_services.is_valid_rank(data.agent_rank)
         query = """INSERT INTO agents (name, specialty, completed_missions, failed_missions, agent_rank)
                    VALUES (%s, %s, %s, %s, %s)
                 """
@@ -50,6 +52,7 @@ class AgentDB(AgentInfo):
     def update_agent(self, id: int, data: AgentInfo):
         query = "UPDATE agents SET %s WHERE id = %s"
         dict_data = AgentInfo.model_dump(data)
+        agent_services.rank_in_update(dict_data)
         keys = [f"{key} = {value}" for key, value in dict_data.items()]
         formated_data = ", ".join(keys)
         self.cursor.execute(query,(formated_data, id))
@@ -119,3 +122,6 @@ class AgentDB(AgentInfo):
         if not succesful:
             return None
         return succesful
+
+ar = AgentDB()
+print(ar.get_all_agents())
