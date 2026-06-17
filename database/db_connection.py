@@ -14,7 +14,7 @@ class DBConnection:
 
     def __init__(self):
         self.conn = get_connect()
-        self.cursor = self.conn.cursor()
+        self.cursor = self.conn.cursor(dictionary=True)
         
     def get_connection(self):
         return self.conn
