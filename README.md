@@ -17,6 +17,11 @@ intelligence-task-manager/
 |    |--- agent_db.py
 |    |--- mission_db.py
 |
+|--- services/
+|    |
+|    |--- agent_services.py
+|    |--- mission_services.py
+|
 |--- main.py
 |--- README.md
 |--- requirements.txt
