@@ -99,17 +99,23 @@ class AgentDB(AgentInfo):
         result = self.cursor.fetchone()
         return result
 
-    # helper method
+    # helper method 
     def count_succeses_by_id(self, id: int):
         self.cursor.execute("SELECT completed_missions FROM agents WHERE id = %s", (id,))
         result = self.cursor.fetchone()
         return result
         
-    # helper method
+    # helper method 
     def count_failures_by_id(self, id: int):
         self.cursor.execute("SELECT failed_missions FROM agents WHERE id = %s", (id,))
         result = self.cursor.fetchone()
         return result
         
 
-    
+    # helper method
+    def get_all_agent_ids(self):
+        self.cursor.execute("SELECT id FROM agents")
+        succesful = self.cursor.fetchall()
+        if not succesful:
+            return None
+        return succesful
