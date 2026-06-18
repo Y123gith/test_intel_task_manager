@@ -86,7 +86,7 @@ The class is responsable for:
 
 
 ## System Rules:
-1) an agents 'rank' must be either 'Junior', 'Senior' or 'Commander' any other rank will get an error
+1) an agent's 'rank' must be either 'Junior', 'Senior' or 'Commander' any other rank will get an error
 2) the difficulty and importance level must be between 1 to 10 otherwise there an error will be raised
 3) the user does not sent the 'risk level'. Instead it is calculated by the program
 4) an agent who 'is_active=False' cannot be assigned any missions
