@@ -1,47 +1,38 @@
-import db_connection
-from pydantic import BaseModel
+import database.db_connection as db_conn
 from services import mission_services
 
 
-class MissionInfo(BaseModel):
-    title : str | None
-    description : str | None    
-    location : str | None
-    difficulty : int
-    importance : int
-    status : str | str="NEW"
-    risk_level : str
-    assigned_agent_id : int | None
 
 
-class AgentDB(MissionInfo):
+
+class MissionDB:
     def __init__(self):
-        self.conn = db_connection.get_connect()
+        self.conn = db_conn.get_connect()
         self.cursor = self.conn.cursor()
 
 
-    def create_mission(self, data: MissionInfo):
-        mission_services.is_valid_importance_or_difficulty(data.difficulty, data.importance)
-        query = """"
-                INSERT INTO missions (title, description, location, difficulty, importance, status, assigned_agent_id)
-                VALUES (%s, %s, %s, %s ,%s, %s, %s)
-                """
-        values = []
-        if not 0 < data.difficulty < 11 or not 0 < data.importance < 11:
-            raise ValueError("the diffculty and importance are numbers between 1-10 only")
-        values.append(data.title)
-        values.append(data.description)
-        values.append(data.location)
-        values.append(data.difficulty)
-        values.append(data.importance)
-        values.append(data.status)
-        values.append(data.assigned_agent_id)
-        self.cursor.execute(query, values)
-        self.conn.commit()
-        succesful = self.cursor.rowcount > 0
-        if not succesful:
-            return None
-        return succesful
+    # def create_mission(self, data):
+    #     mission_services.is_valid_importance_or_difficulty(data.difficulty, data.importance)
+    #     query = """"
+    #             INSERT INTO missions (title, description, location, difficulty, importance, status, assigned_agent_id)
+    #             VALUES (%s, %s, %s, %s ,%s, %s, %s)
+    #             """
+    #     values = []
+    #     if not 0 < data.difficulty < 11 or not 0 < data.importance < 11:
+    #         raise ValueError("the diffculty and importance are numbers between 1-10 only")
+    #     values.append(data.title)
+    #     values.append(data.description)
+    #     values.append(data.location)
+    #     values.append(data.difficulty)
+    #     values.append(data.importance)
+    #     values.append(data.status)
+    #     values.append(data.assigned_agent_id)
+    #     self.cursor.execute(query, values)
+    #     self.conn.commit()
+    #     succesful = self.cursor.rowcount > 0
+    #     if not succesful:
+    #         return None
+    #     return succesful
     
 
     def get_all_missions(self):
@@ -72,9 +63,10 @@ class AgentDB(MissionInfo):
         return succesful
     
 
-    def update_mission_status(self, id: int, status: str):
-        mission_services.is_valid_status(status)
-        self.cursor.execute("UPDATE missions SET status = %s  WHERE id = %s", (status, id))
+    def update_mission_status(self, id: int, status: dict):
+        mission_services.is_valid_status(status.values())
+        # need a method (since i need to read from the table) to make sure the update procces is in the correct order. for example: after NEW it can only be updated to ASSIGNED
+        self.cursor.execute("UPDATE missions SET status = %s  WHERE id = %s", (status.values(), id))
         self.conn.commit()
         succesful = self.cursor.rowcount > 0 
         if not succesful:
