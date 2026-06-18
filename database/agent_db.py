@@ -1,23 +1,15 @@
-from pydantic import BaseModel
-import db_connection
-from services import agent_services
+import database.db_connection as db
+import services.agent_services as ser_ag_ser
 
 
-class AgentInfo(BaseModel):
-    name : str | None
-    specialty : str | None
-    completed_missions : int | None
-    failed_missions : int | None
-    agent_rank : str
-
-class AgentDB(AgentInfo):
+class AgentDB():
     def __init__(self):
-        self.conn = db_connection.get_connect()
+        self.conn = db.get_connect()
         self.cursor = self.conn.cursor()
 
     
-    def create_agent(self, data: AgentInfo):
-        agent_services.is_valid_rank(data.agent_rank)
+    def create_agent(self, data):
+        ser_ag_ser.is_valid_rank(data.agent_rank)
         query = """INSERT INTO agents (name, specialty, completed_missions, failed_missions, agent_rank)
                    VALUES (%s, %s, %s, %s, %s)
                 """
@@ -42,18 +34,17 @@ class AgentDB(AgentInfo):
     
 
     def get_agent_by_id(self, id: int):
-        self.cursor.execute("SELECT * From agents WHERE id %s", (id,))
+        self.cursor.execute("SELECT * From agents WHERE id = %s", (id,))
         succesful = self.cursor.fetchone()
         if not succesful:
             return None
         return succesful
     
 
-    def update_agent(self, id: int, data: AgentInfo):
+    def update_agent(self, id: int, data):
         query = "UPDATE agents SET %s WHERE id = %s"
-        dict_data = AgentInfo.model_dump(data)
-        agent_services.rank_in_update(dict_data)
-        keys = [f"{key} = {value}" for key, value in dict_data.items()]
+        ser_ag_ser.rank_in_update(data)
+        keys = [f"{key} = {value}" for key, value in data.items()]
         formated_data = ", ".join(keys)
         self.cursor.execute(query,(formated_data, id))
         self.conn.commit()
@@ -93,7 +84,10 @@ class AgentDB(AgentInfo):
     def get_agent_performance(self, id: int):
         succeses = self.count_succeses_by_id(id)
         failures = self.count_failures_by_id(id)
-        result_dict = {"completed": succeses, "failed": failures, "total": failures + succeses, "succes_rate":(succeses//failures)//100}
+        if failures == 0:
+            result_dict = {"completed": succeses, "failed": failures, "total": failures + succeses, "succes_rate":100}
+        else:
+            result_dict = {"completed": succeses, "failed": failures, "total": failures + succeses, "succes_rate":(succeses//failures)/100}
         return result_dict
 
 
@@ -106,13 +100,13 @@ class AgentDB(AgentInfo):
     def count_succeses_by_id(self, id: int):
         self.cursor.execute("SELECT completed_missions FROM agents WHERE id = %s", (id,))
         result = self.cursor.fetchone()
-        return result
+        return int(result[0])
         
     # helper method 
     def count_failures_by_id(self, id: int):
         self.cursor.execute("SELECT failed_missions FROM agents WHERE id = %s", (id,))
         result = self.cursor.fetchone()
-        return result
+        return int(result[0])
         
 
     # helper method
@@ -122,6 +116,3 @@ class AgentDB(AgentInfo):
         if not succesful:
             return None
         return succesful
-
-ar = AgentDB()
-print(ar.get_all_agents())
