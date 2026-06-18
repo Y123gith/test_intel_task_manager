@@ -22,6 +22,16 @@ intelligence-task-manager/
 |    |--- agent_services.py
 |    |--- mission_services.py
 |
+|--- routes/
+|    |
+|    |--- agent_routes.py
+|    |--- mission_routes.py
+|    |--- report_routes.py
+|
+|--- logs/
+|    |
+|    |--- logs.app
+|
 |--- main.py
 |--- README.md
 |--- requirements.txt
@@ -50,6 +60,33 @@ importance        | INT                            | *between 1-10 only
 status            | VARCHAR(25) DEAFULT 'NEW'      |
 risk_level        | VARCHAR(10)                    | *input automatic only
 assigned_agent_id | INT DEFAULT NULL               |
+```
+
+## Endpoints:
+### agent endpoints:
+```
+POST | /agents
+GET  | /agents
+GET  | /agents/{id}
+PUT  | /agents/{id}
+PUT  | /agents/{id}/deactivate
+GET  | /agents/{id}/perfomance
+```
+### mission endpoints:
+```
+POST | /missions
+GET  | /missions
+PUT  | /missions/{id}/assign/{agent_id}
+PUT  | /missions/{id}/start
+PUT  | /missions/{id}/complete
+PUT  | /missions/{id}/fail
+PUT  | /missions/{id}/cancel
+```
+### reports endpoints:
+```
+GET  | /reports/summary
+GET  | /reports/missions-by-start
+GET  | /reports/top-agent
 ```
 
 ## Explaination on the different 'classes':
@@ -96,6 +133,9 @@ The class is responsable for:
 8) a mission may be started when in stage 'ASSIGNED' after the mission starts it will be updated to 'IN_PROGRESS'
 9) a mission can be completed only from the 'IN_PROGRESS' status the it will updated to either 'failed' or 'completed' 
 10) a mission can be cancelled only when in status of 'NEW' or 'ASSIGNED' otherwise it will raise an error
+
+## Activity Flow:
+A. Agent creation, B. Mission creation, C. Mission assignment D. Agent starts mission ('IN_PROGRESS'), E. Mission ending, F. Mission reports
 
 
 ## Getting the system started:
